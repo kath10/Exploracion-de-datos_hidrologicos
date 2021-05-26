@@ -1,0 +1,158 @@
+---
+title: "Exploración de datos Hidrológicos, tarea 02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Importación de datos hidrólogicos de un archivo CSV
+En esta sección se procede a importar los datos de los ríos Estrella y Banano de un archivo denominado como FDC.csv 
+```{r}
+inp <- read.csv("FDC.csv", na.strings="")
+```
+
+### Gráfico de líneas del caudal de los ríos Estrella y Banano
+Este gráfico hace una representación del volumen de los niveles de los caudales en los años de 1973 a 1983.
+```{r}
+plot(
+  inp[,2], 
+  type = "l", col="navy blue",
+  main = ("Volumen de los caudales de los ríos Estrella y Banano"),
+  xlab = ("Tiempo"),
+  ylab = ("Nivel del caudal")
+)
+  lines(inp[,3], col= "gray")
+```
+  
+  
+
+### Gráfico de barras del río Estrella
+Este gráfico de barras brinda información del nivel del caudal respecto al agua por día.
+```{r}
+  hist(inp[,2],
+  main = ("Río Estrella"),
+  height = inp$Estrella,
+  names.arg = inp$Fecha,
+  xlab = ("Agua por día"),
+  ylab = ("Nivel del caudal"),
+  col = ("Brown"))
+```
+
+
+### Gráfico de barras del río Banano
+De igua manera este gráfico de barras ofrece información del nivel del caudal con respecto al agua que se da por día.
+```{r}
+  hist(inp[,3],
+  main = ("Río Banano"),
+  names.arg = inp$Fecha,
+  xlab = ("Agua por día"),
+  ylab = ("Nivel del caudal"),
+  col = ("pink"))
+```
+
+### Determinar nombres a la columnas 1,2 y3
+Se modifica los nombres de las colunmas 1,2 y 3. Así que la columna 1 se denominará Fecha, la columna 2 se le brindará el nombres de Estrella y la columna 3 se le determina como Banano.
+```{r}
+names(inp) <- c("fecha", "Estrella", "Banano")
+```
+
+
+### Gráfico de puntos del río Estrella
+El gráfico corresponde a una visualización de puntos en base del nivel del caudal del río conforme el tiempo.
+```{r}
+plot(
+  inp$Estrella,
+  main = "Río Estrella",
+  xlab = "Tiempo",
+  ylab = "Nivel de caudal",
+  col = "Orange"
+)
+```
+
+
+### Gráfico de puntos del río Banano
+El gráfico de igual manera que el anterio corresponde a una visualización de puntos en base del nivel del caudal del río conforme el tiempo.
+```{r}
+plot(
+  inp$Banano,
+  main = "Río Banano",
+  xlab = "Tiempo",
+  ylab = "Nivel de caudal",
+  col = "Violet"
+)
+```
+
+
+### Conversión de la columna de Fecha 
+Se lleva a cabo una modificación de la columna de Fecha a la a la clase Date.
+```{r}
+Tempdate <- strptime(inp[,1], format = "%d/%m/%Y")
+```
+
+### Determinar el cálculo del caudal en un determinado período
+Se determina el cálculo de los caudales de los ríos Estrella y Banano de manera anual.
+```{r}
+MAQ_Estrella <- tapply(inp[,2], format(Tempdate, format = "%Y"), FUN = sum)
+MAQ_Banano <- tapply(inp[,3], format(Tempdate, format= "%Y"), FUN = sum)
+```
+
+### Exportar los archivos de MAQ Estrella y MAQ Banano
+Se lleva a cabo una exportación de los datos de MAQ Estrella y MAQ Banano a un archivo del directorio correspondiente.
+```{r}
+write.csv(rbind(MAQ_Estrella,MAQ_Banano), file="MAQ.csv")
+```
+
+
+### Gráfico de líneas y puntos de los caudales del río Estrella y Banano
+En este gráfico se visualiza líneas y puntos basados en una comparación del nivel del caudal de manera anual dado entre los años de 1973 a 1983, la línea representa el río Estrella y los puntos el río Banano.
+```{r}
+
+plot(MAQ_Banano, 
+    ylim=c(100,3000),
+    xlab= ("Tiempo"),
+    ylab= ("Nivel del caudal"),
+    main = ("Comparación de los niveles de los caudales anuales de los ríos"),
+    col="dark green"
+  )
+lines(MAQ_Estrella, col="maroon")
+```
+
+### Determinar el cálculo del nivel caudal en un lapso determinado
+Se determina el nivel del caudal de los ríos Estrella y Banano de forma mensual
+```{r}
+MMQ_Estrella <- tapply(inp[,2], format(Tempdate, format= "%m"), FUN=sum)
+MMQ_Banano <- tapply(inp[,3], format(Tempdate, format= "%m"), FUN=sum)
+```
+
+
+### Análisis de correlación de los ríos Estrella y Banano
+Se lleva a cabo para poder obtener un análisis de la relación que se presenta entre los ríos tmando en cuenta los causales y el tiempo
+```{r}
+corinp <- cor(inp[,2:3], method= "spearman")
+```
+
+
+
+### Gráfico de la relación dada entre los caudales de río Estrella y río Banano
+Este gráfico brinda una información de la relación que se da entre los ríos conforme el nivel del caudal con el tiempo.
+```{r}
+plot(
+  inp$Estrella, 
+  inp$Banano, 
+  xlab = ("Nivel del caudal"),
+  ylab = ("Tiempo"),
+  main = ("Relación de los caudales de río Banano y río Estrella"),
+  col= ("sky blue")
+)
+```
+
+
+### Gráficos de correlación de los ríos Estrella y Banano
+Estos gráficos brindan distintas perpepciones de los análisis de los caudales relacionados con el tiempo.
+```{r}
+inp.lm <- lm(inp[,2]~inp[,3], data=inp)
+summary(inp.lm)
+plot(inp.lm)
+```
